@@ -1,0 +1,15 @@
+uid: 175
+pphost: [url here] 
+b_email: [email here] 
+n_url: [url here]
+api_login: 7zBSe6d57Mc
+api_key: 54243RveQhdYDe36
+gateway: test
+dbcon:
+  adapter: mysql
+  database: redmine_taskpoint
+  host: localhost
+  port: 3307
+  username: root
+  password: 111111
+  encoding: utf8

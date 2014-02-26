@@ -1,0 +1,23 @@
+# English strings go here for Rails i18n
+en:
+  label_kanban: "Kanban"
+  label_kanban_columns: "Kanban columns"
+  label_kanban_categories: "Kanban categories"
+  label_kanban_board: "Kanban board"
+  label_kanban_permissions: "Kanban permissions"
+
+  label_issue_view_on_kanban: "Kanban view"
+
+  text_kanban_title: "Kanban"
+  text_description: "This is a description of Kanban board"
+  
+  field_category: "Category"
+  field_permission_view: "View"
+  field_permission_manage: "Manage"
+
+  button_sort: "Sort"
+
+  label_assigned_to: "Assigned to"
+
+  label_full_view: "full"
+  label_short_view: "short"

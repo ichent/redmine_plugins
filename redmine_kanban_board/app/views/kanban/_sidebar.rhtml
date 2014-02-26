@@ -1,0 +1,13 @@
+<h3><%= l(:label_kanban) %></h3>
+
+<% if User.current.admin? %>
+  <%= link_to l(:label_kanban_columns), { :controller => 'kanban_categories', :action => 'index' } %><br />
+<% end %>
+
+<% if KanbanPermission.allowed_to?(:manage, User.current) || KanbanPermission.allowed_to?(:view, User.current) %>
+  <%= link_to l(:label_kanban_board), { :controller => 'kanban', :action => 'board' } %>
+<% end %>
+
+<% if User.current.admin? %>
+  <br /><%= link_to l(:label_kanban_permissions), { :controller => 'kanban_permissions', :action => 'index' } %>
+<% end %>

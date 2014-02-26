@@ -1,0 +1,39 @@
+<%= javascript_include_tag "jquery.qtip-1.0.0.min.js", :plugin => "redmine_kanban_board" %>
+
+<% issue_estimate = 0 %>
+
+<%= javascript_tag "jQuery('.qtip').remove();" %>
+
+<% button_hide_html = image_tag "icon_hide.gif", :plugin => "redmine_kanban_board" %>
+
+<% for kanban_issue in @kanban_issues %>  
+  <% if kanban_issue.category_id == 5 %>
+    <% # Add popup windows %>
+    <% issue_estimate += ("%.2f" % kanban_issue.issue.estimated_hours.to_f).to_f %>
+    <%= javascript_tag "jQuery('#item#{kanban_issue.issue_id}').qtip({
+          content: ' ETA for this ticket is : #{issue_estimate} hrs',
+          position: {
+             target: 'mouse',
+             corner: {
+                target: 'topMiddle',
+                tooltip: 'bottomLeft'
+             }
+          },
+          style: {
+            tip: true,
+            name: 'light'
+          }
+        });"
+    %>
+  <% end %>
+
+  <% if kanban_issue.category_id == 1 %>
+    <% # Add hide button %>
+    <%= javascript_tag "jQuery('#item#{kanban_issue.issue_id} .button_hide').remove();
+                        jQuery('#item#{kanban_issue.issue_id}').prepend('<span class=\"button_hide\">#{button_hide_html}</span>');
+        "
+    %>
+  <% else %>
+    <%= javascript_tag "jQuery('#item#{kanban_issue.issue_id} .button_hide').remove();" %>
+  <% end %>
+<% end %>

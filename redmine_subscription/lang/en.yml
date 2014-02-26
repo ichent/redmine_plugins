@@ -1,0 +1,14 @@
+en:
+  project_limit: You can't add more projects
+  user_limit: You can't add more users
+  title: Subscription
+
+  field_pass: Password
+  field_firstname: First Name
+  field_lastname: Last Name
+  field_email: E-Mail
+  field_address: Address
+  field_zip: ZIP
+  field_state: State
+  field_country: Country
+  field_organization: Organization name

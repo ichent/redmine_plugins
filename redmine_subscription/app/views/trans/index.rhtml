@@ -1,0 +1,22 @@
+<table border="0" cellspacing="0">
+    <thead style="background-color: #f0f0f0;">
+        <tr> 
+            <%= sort_header_tag('date', :caption => "Payment Date") %>
+            <%= sort_header_tag('user_message', :caption => "Message") %>
+            <%= sort_header_tag('amount', :caption => "Payment Amount") %>
+        </tr>
+    </thead>
+    <tbody>
+        <% @payments.each do |payment| -%>
+            <tr>
+                <td align="center"><%= payment.date.strftime("%Y-%m-%d") %></td>
+                <td align="left"><%= payment.user_message %></td>
+                <td align="right"><%= payment.amount %></td>
+            </tr>
+        <% end -%>
+    </tbody>
+</table>
+
+<br>
+
+<p class="pagination"><%= subs_pagination_links_full @payment_pages, @payment_count %></p>

@@ -1,0 +1,29 @@
+<div class="contextual">
+</div>
+
+<h2><%=l(:label_kanban_categories)%></h2>
+ 
+<table class="list">
+  <thead>
+    <tr>
+      <th><%=l(:field_category)%></th>
+      <th><%=l(:button_sort)%></th>
+    </tr>
+  </thead>
+  <tbody>
+    <% for category in @kanban_categories %>
+      <tr class="<%= cycle("odd", "even") %>">
+        <td><%= category.name %></td>
+	<td align="center" style="width:15%;"><%= reorder_links('kanban_category', {:action => 'update', :id => category}) %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
+<p class="pagination"><%= pagination_links_full @kanban_category_pages %></p>
+
+<% html_title(l(:label_kanban_categories)) -%>
+
+<% content_for :sidebar do %>
+    <%= render :partial => 'kanban/sidebar' %>
+<% end %>

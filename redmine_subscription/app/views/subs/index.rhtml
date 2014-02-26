@@ -1,0 +1,265 @@
+<script type="text/javascript">
+    if (typeof jQuery == 'undefined')
+    {
+        var script = document.createElement('script');
+        script.type = 'text/javascript';
+        script.src = '/plugin_assets/redmine_subscription/javascripts/jquery-1.4.4.min.js';
+        document.getElementsByTagName('head')[0].appendChild(script);
+    }
+    else
+    {
+        //already loaded, do something here
+    }
+</script>
+
+<%= javascript_include_tag 'subscription.js', :plugin => 'redmine_subscription' %>
+
+<% html_title "Subscription" %>
+<h2>Subscription</h2>
+
+<%= error_messages_for :credit_card %>
+
+<%= stylesheet_link_tag 'subscription', :media => 'all', :plugin => 'redmine_subscription' %>
+
+<div class="tabs">
+    <ul>
+        <li><a href="/subs/index?tab=subscription" <%= @selected_tab == "tab-content-subscription" ? "class='selected'" : nil -%> id="tab-subscription" onclick="showTab('subscription'); this.blur(); return false;">General</a></li>
+        <li><a href="/subs/index?tab=payments" <%= @selected_tab == "tab-content-payments" ? "class='selected'" : nil -%> id="tab-payments" onclick="showTab('payments'); this.blur(); return false;">History</a></li>
+        <li><a href="/subs/index?tab=subscriber" <%= @selected_tab == "tab-content-subscriber" ? "class='selected'" : nil -%> id="tab-subscriber" onclick="showTab('subscriber'); this.blur(); return false;">Profile</a></li>
+    </ul>
+</div>
+
+<div class="tab-content" id="tab-content-subscription" <%= @selected_tab == "tab-content-subscription" ? nil : "style='display:none'" -%>>
+    <div style="margin: 15px; text-align: left; width: 954px;">
+        <p><span class="tab_header">Your current plan</span></p>
+        <p>
+        <%= @account.i_bilcircle == 0 ? "<div class='type_basic'>" : "<div class='type_advanced'>" -%>
+            <span style="left:<%= @account.i_bilcircle == 0 ? "12" : "15" -%>px;font-family:Trebuchet MS,Verdana,sans-serif;font-weight:600;"><%= @cur_plan.name -%></span>
+            <span>$<%= "%.2f" % @cur_price -%>/<%= @account.i_bilcircle == 0 ? 'month' : 'year' -%></span>
+            <%= @account.i_bilcircle == 0 ? "<div class='type_basic_div'>" : "<div class='type_advanced_div'>" -%>
+                <strong><%= @cur_plan.maxusers -%></strong>&nbsp;users<br/>
+                <strong><%= @cur_plan.maxprojects -%></strong>&nbsp;projects<br/>
+                <strong><%= @cur_plan.maxspace -%> GB</strong>&nbsp;disk space
+            </div>
+        </div>
+
+        <div style="width:954px; display:inline; padding-left: 20px; font-size: 14px; font-weight: bold; font-family:Trebuchet MS,Verdana,sans-serif;">
+            <span style="padding-left: 150px;">Credit:</span> <%= @account.credit %>&nbsp USD<br><br>
+            <span style="padding-left: 118px;">Next payment:</span> <%= @account.endtime.strftime("%d %b %Y") %><br><br><br><br><br>
+            <div style="height:35px;font-size:16px;padding-top:5px;padding-left:30px; float: left;">
+                <%= @account.i_bilcircle == 0 ? "Save " + @bil_circle.discount.to_s + "% by choosing an annual billing option" : "Switch to monthly billing" -%>&nbsp;&nbsp;
+            </div>
+            <a id="sub_btn" href="#" onclick="change_plan('change', <%= @cur_plan.i_plan %>, 0);"><em style="display: none;">Sign Up</em></a>
+        </div>
+        </p>
+
+<br/><br/><br/><br/>
+<div style="width:954px;float:left;padding-bottom:5px;"><hr></div>
+<div><span class="tab_header">Available plans:</span></div>
+
+<% @plans.each do |pp| -%>
+  <div id="hosted_btn_<%= pp.i_plan -%>">
+  <%= "<div class='type_basic'>" -%>
+    <span style="left:12px; font-family:Trebuchet MS,Verdana,sans-serif; font-weight:600;"><%= pp.name -%></span>
+      <span>$<%= "%.2f" % pp.price -%>/month</span>
+      <%= "<div class='type_basic_div'>" -%>
+        <strong><%= pp.maxusers -%> </strong>users<br/>
+        <strong><%= pp.maxprojects -%> </strong>projects<br/>
+        <strong><%= pp.maxspace -%> GB </strong>disk space<br/>
+
+        <div style="position: absolute; left:0px; top:<%= "80px" -%>;">
+            Annual
+            <input type="checkbox" name="src_<%= pp.i_plan -%>" id="src_<%= pp.i_plan -%>" value="0" onclick="on_select_plan(<%=pp["i_plan"]-%>,'src_<%=pp["i_plan"]-%>');">
+        </div>
+      </div>
+      <a id="sub_btn" href="#" onclick="change_plan('new', <%= pp.i_plan %>, 0);"><em style="display: none;">Sign Up</em></a>
+  </div>
+  </div>
+<% end -%>
+
+<div style="width:954px;display:block;float:left;padding-bottom:10px;padding-top:10px;"><hr></div>
+<div><span class="tab_header">Cancellation</span></div>
+<div id="cancellation" style="width:954px;display:block;float:left;padding-bottom:20px;font-family:Trebuchet MS,Verdana,sans-serif;font-weight:900;font-size:16px;">
+  <%= image_tag("/plugin_assets/redmine_subscription/images/cancellation.png", :height => 17, :widht => 17) %>
+
+  <a href="/subs/cancel_account" style=" text-decoration: underline;">Cancel my subscription and remove all account data</a><br/><br/>
+    <div style="border: 1px solid #000; font-size:14px; width: 600px; background-color: #ededed; padding: 5px;">Cancelling your TaskPoint subscription will remove all data. <br/>
+         Account deletion is irreversible.
+    </div>
+</div>
+</div>
+</div>
+
+<div class="tab-content" id="tab-content-payments" <%=  @selected_tab == "tab-content-payments" ? nil : "style=\"display:none\"" -%>>
+    <% if @payments.empty? -%>
+        <h3>No payments received from you yet</h3>
+    <% else -%>
+        <div id="payments">
+          <%= render :partial => "trans/index", :locals => {:payments => @payments, :payment_pages => @payment_pages, :payment_count => @payment_count} %>
+        </div>
+    <% end -%>
+</div>
+
+<div class="tab-content" id="tab-content-subscriber" <%= @selected_tab == "tab-content-subscriber" ? nil : "style=\"display:none\"" -%> >
+    <%= error_messages_for 'account' %>
+
+    <div class="register_leftpanel">
+        <div class="profile_header_panels">Subscriber information</div>
+        <div class="register_input">
+            <% form_for @account, :url=>{:action=>'index'}, :html=>{:method => :post} do |f| %>
+                <div class="register_input_375">
+                    <p>
+                        <span><%= f.label 'Organisation name:' %></span>
+                        <%= f.text_field :organization, :size=>'40', :maxlength=>'30' %>
+                    </p>
+                    <p>
+                        <span><%= f.label 'Contact e-mail:' %></span>
+                        <%= f.text_field :email, :size=>'40', :maxlength=>'30' %>
+                    </p>
+                    <p>
+                        <span><%= f.label 'First name:' %></span>
+                        <%= f.text_field :firstname, :size=>'40', :maxlength=>'60' %>
+                    </p>
+                    <p>
+                        <span><%= f.label 'Last name:' %></span>
+                        <%= f.text_field :lastname, :size=>'40', :maxlength=>'60' %>
+                    </p>
+                    <div class="register_input_200">
+                        <div class="register_input_170">
+                          <p>
+                            <span><%= label :account, :country, 'Country:' %></span>
+                            <%= select :account, :country, @country, {}, {:class=>"cs",:onchange=>"on_select_country('account_state', 'account');"} %>
+                          </p>
+                        </div>
+                    </div>
+                    <p>
+                        <span><%= f.label 'Address:' %></span>
+                        <%= f.text_area :address, :cols => 19, :rows => 2, :maxlength=>'255' %>
+                    </p>
+                    <p>
+                        <span><%= label :account, :state, 'City/Town:' %></span>
+                        <%= f.text_field :city, :size=>'40', :maxlength=>'60' %>
+                        &nbsp;                        
+                        <% if @account.country == "United States of America" %>
+                            <select id="account_state" name="account[state]">
+                                <% @state.each do |p| -%>
+                                    <option value="<%= p -%>" <%= @account.state==p ? "selected='selected'" : nil -%>><%= p -%></option>
+                                <% end -%>
+                            </select>
+                        <% else %>
+                            <select id="account_state" name="account[state]" disabled="disabled">
+                                <option value="<%= @account.state -%>"><%= @account.state -%></option>
+                            </select>
+                        <% end %>                        
+                    </p>
+                    <p>
+                        <span><%= f.label 'ZIP:' %></span>
+                        <%= f.text_field :zip, :size=>'16', :maxlength=>'16' %>
+                    </p>
+                    <p>
+                        <span><%= f.label 'Phone number:' %></span>
+                              <%= f.text_field :phone, :size=>'16', :maxlength=>'16' %>
+                    </p>
+                </div>
+                <div style="margin-left:140px">
+                    <%= submit_tag%>
+                </div>
+            <% end %>
+        </div>
+    </div>
+    <br>
+    <hr>
+    <div class="register_leftpanel">
+        <div class="profile_header_panels">Billing information</div>
+        <% unless @credit_card.blank? %>
+        <div class="register_input">
+            <% form_for @credit_card, :url=>{:action=>'card'}, :html=>{:method => :post} do |c| %>
+                <p>
+                    <%= check_box_tag "copy_address", 1, false, :onclick => "copy_address_from_account()" %>
+                    <%= label :credit_card, :copy_address, 'Copy address from subscriber information:' %>
+                </p>
+                <div class="register_input_375">
+                    <p>
+                        <span><%= c.label 'First name:' %></span>
+                        <%= c.text_field :first_name, :size=>'40', :maxlength => '30' %>                       
+                    </p>
+                    <p>
+                        <span><%= c.label 'Last name:' %></span>
+                        <%= c.text_field :last_name, :size=>'40', :maxlength=>'30' %>
+                    </p>
+                    <div class="register_input_200">
+                        <div class="register_input_170">
+                          <p class="no_padding_bottom">
+                            <span><%= c.label 'Card number:' %></span>
+                            <%= c.text_field :cc_number, :size=>'40', :maxlength=>'60' %>&nbsp;
+                            <%= image_tag("/plugin_assets/redmine_subscription/images/card_type.png", :height => 20) %>
+                          </p>
+                          <p>
+                            <span><%= c.label 'Expires on:' %></span>
+                            <select id="expires_date_months" name="expires_date_months" class="cs">
+                                    <% @expires_months.each do |p| -%>
+                                        <option value="<%= p -%>" <%= @credit_card.cc_expired.split("/").[](0).to_i==p.[](0..1).to_i ? "selected='selected'" : nil -%>><%= p -%></option>
+                                    <% end -%>
+                            </select>
+                            <select style="width: auto" id="expires_date_years" name="expires_date_years">
+                                    <% @expires_years.each do |p| -%>
+                                        <option value="<%= p -%>" <%= "20".concat(@credit_card.cc_expired.split("/").[](1)).to_i==p.to_i ? "selected='selected'" : nil -%>><%= p -%></option>
+                                    <% end -%>
+                            </select>
+                          </p>
+                          <p>
+                            <span><%= c.label 'Security code:' %></span>
+                            <%= c.text_field :cvv, :size=>'40', :maxlength=>'60' %>&nbsp;
+                            <%= image_tag("/plugin_assets/redmine_subscription/images/sec_code.png") %>&nbsp;
+                            <%= link_to "What's this?", "#", :target => "_blank" %>
+                          </p>
+                        </div>
+                    </div>
+                    <div class="register_input_200">
+                        <div class="register_input_170">
+                            <p>
+                                <span><%= label :credit_card, :country, 'Country:' %></span>
+                                <%= select :credit_card, :country, @country, {}, {:class => "cs", :onchange => "on_select_country('credit_card_state', 'credit_card');" } %>
+                            </p>
+                        </div>
+                    </div>
+                            <p>
+                                <span><%= c.label 'Address:' %></span>
+                                <%= c.text_area :address, :cols => 19, :rows => 2, :maxlength=>'255' %>
+                            </p>
+                            <p>
+                                <span><%= label :credit_card, :state, 'City/Town:' %></span>
+                                <%= c.text_field :city, :size=>'40', :maxlength=>'60' %>
+                                &nbsp;
+                                <% if @credit_card.country == "United States of America" %>
+                                    <select id="credit_card_state" name="credit_card[state]">
+                                        <% @state.each do |p| -%>
+                                            <option value="<%= p -%>" <%= @credit_card.state==p ? "selected='selected'" : nil -%>><%= p -%></option>
+                                        <% end -%>
+                                    </select>
+                                <% else %>
+                                    <select id="credit_card_state" name="credit_card[state]" disabled="disabled">
+                                        <option value="<%= @credit_card.state -%>"><%= @credit_card.state -%></option>
+                                    </select>
+                                <% end %>
+                            </p>
+                            <p>
+                                <span><%= c.label 'ZIP:' %></span>
+                                <%= c.text_field :zip, :size=>'16', :maxlength=>'16' %>
+                            </p>
+                            <p>
+                                <span><%= c.label 'Phone number:' %></span>
+                                <%= c.text_field :phone, :size=>'16', :maxlength=>'16' %>&nbsp;
+                                Phone number linked to your credit card
+                            </p>
+                </div>
+                <div style="margin-left:140px">
+                    <%=  submit_tag%>
+                </div>
+            <% end %>
+        </div>
+    <% else %>
+        Credit card is not set
+    <% end %>
+    </div>
+</div>

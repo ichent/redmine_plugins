@@ -1,0 +1,39 @@
+<%= javascript_tag "var AUTH_TOKEN = #{form_authenticity_token.inspect};" if protect_against_forgery? %>
+<%= javascript_include_tag "jquery-1.3.2.js", :plugin => "redmine_kanban_board" %>
+<%= javascript_include_tag "permission_script.js", :plugin => "redmine_kanban_board" %>
+
+<h2><%= l(:label_kanban_permissions) %></h2>
+
+<div class="autoscroll">
+  <table class="list">
+    <thead>
+      <tr>
+        <th><%= l(:field_login) %></th>
+        <th><%= l(:field_permission_view) %></th>
+        <th><%= l(:field_permission_manage) %></th>
+      </tr>
+    </thead>
+    <tbody>
+      <% for user in @users -%>
+        <tr class="user <%= cycle("odd", "even") %>">
+          <td class="username"><%= avatar(user, :size => "14") %><%= link_to h(user.firstname + ' ' + user.lastname), edit_user_path(user) %></td>
+          <td align="center" class="view"><%= check_box_tag "view",
+                                                            "1",
+                                                            !user.view.blank? && user.view.to_i == 1 ? true : false,
+                                                            :onchange => "update_permission(this, #{user.id}, 'view');" %></td>
+          <td align="center" class="manage"><%= check_box_tag "manage",
+                                                              "1",
+                                                              !user.manage.blank? && user.manage.to_i == 1 ? true : false,
+                                                              :onchange => "update_permission(this, #{user.id}, 'manage');" %></td>
+        </tr>
+      <% end -%>
+    </tbody>
+  </table>
+</div>
+<p class="pagination"><%= pagination_links_full @user_pages, @user_count %></p>
+
+<% html_title(l(:label_kanban_permissions)) -%>
+
+<% content_for :sidebar do %>
+    <%= render :partial => 'kanban/sidebar' %>
+<% end %>

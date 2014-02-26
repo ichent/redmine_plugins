@@ -1,0 +1,24 @@
+<% if KanbanPermission.allowed_to?(:manage, User.current) %>
+  <%= javascript_include_tag "jquery-1.3.2.js", :plugin => "redmine_kanban_board" %>
+  <%= javascript_include_tag "issue_script.js", :plugin => "redmine_kanban_board" %>
+
+  <% # Check, if exist issue in Kanban board %>
+  <% kanban_issue = KanbanIssue.check_issue_exist(issue.id) %>
+  <%
+    if issue.new_record?
+      kanban_issue = true
+    end
+  %>
+
+  <p><label><%= l(:label_issue_view_on_kanban) %></label>
+    <%= check_box_tag "kanban_view", "1", kanban_issue ? true : false %>
+  </p>
+
+  <p style="<%= kanban_issue ? '' : 'display: none;' %>" id="kanban_categories"><label><%= l(:label_kanban_categories) %></label>
+    <% kanban_categories = KanbanCategory.find(:all, :order => :position) %>
+    <%= select_tag "kanban_category", options_from_collection_for_select(kanban_categories,
+                                                                         "id",
+                                                                         "name",
+                                                                         !issue.new_record? && kanban_issue ? kanban_issue.category_id : nil) %>
+  </p>
+<% end %>
